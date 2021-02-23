@@ -3,12 +3,12 @@ import logging
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils.executor import start_webhook
-from config import API_TOKEN, WEBHOOK_HOST, WEBHOOK_PATH3, WEBAPP_PORT
+from config import API_TOKEN3, WEBHOOK_HOST, WEBHOOK_PATH3, WEBAPP_PORT
 
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH3}"
 WEBAPP_HOST = 'localhost'
 logging.basicConfig(level=logging.INFO)
-bot = Bot(token=API_TOKEN, parse_mode=types.ParseMode.HTML)
+bot = Bot(token=API_TOKEN3, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot)
 
 

@@ -1,20 +1,42 @@
 import logging
 
+from aiogram import executor
+from aiohttp import web
+
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
-from aiogram.utils.executor import start_webhook
-from config import API_TOKEN, WEBHOOK_HOST, WEBHOOK_PATH2, WEBAPP_PORT
 
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH2}"
+from bot import run_bot
+from config import API_TOKEN, WEBHOOK_HOST, tokens
+
+WEBHOOK_URL = f"{WEBHOOK_HOST}/{API_TOKEN}"
 WEBAPP_HOST = 'localhost'
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot)
+c = 0
 
+
+@dp.message_handler(commands=['newbot'])
+async def send_welcome(message: types.Message):
+    global c
+    token = tokens[c]
+    c += 1
+    try:
+        run_bot(dp, token, token, WEBHOOK_HOST, c)
+    except Exception as e:
+        text = 'Error ' + str(e)
+        await message.answer(text)
+        return
+
+    await message.answer('Successful')
+
+app = web.Application()
 
 @dp.message_handler()
 async def echo(message: types.Message):
-    await message.answer(message.text)
+    text = 'Я главный бот! ' + message.text
+    await message.answer(text)
 
 
 async def on_startup(dp):
@@ -28,12 +50,12 @@ async def on_shutdown(dp):
 
 
 if __name__ == '__main__':
-    start_webhook(
+    custom_executor = executor.set_webhook(
         dispatcher=dp,
-        webhook_path=WEBHOOK_PATH2,
+        webhook_path='/'+API_TOKEN,
         on_startup=on_startup,
         on_shutdown=on_shutdown,
         skip_updates=True,
-        host=WEBAPP_HOST,
-        port=WEBAPP_PORT,
+        web_app=app
     )
+    custom_executor.run_app()

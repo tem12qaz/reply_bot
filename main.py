@@ -6,7 +6,7 @@ from aiogram.types import ChatType
 from aiogram.utils.executor import start_webhook
 from config import API_TOKEN, WEBHOOK_HOST, WEBHOOK_PATH, WEBAPP_PORT, CHAT_ID
 
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
+WEBHOOK_URL = f"{WEBHOOK_HOST}/{API_TOKEN}"
 WEBAPP_HOST = 'localhost'
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN, parse_mode=types.ParseMode.HTML)
@@ -43,7 +43,7 @@ async def on_shutdown(dp):
 if __name__ == '__main__':
     start_webhook(
         dispatcher=dp,
-        webhook_path=WEBHOOK_PATH,
+        webhook_path='/'+API_TOKEN,
         on_startup=on_startup,
         on_shutdown=on_shutdown,
         skip_updates=True,
