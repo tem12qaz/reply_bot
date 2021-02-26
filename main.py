@@ -1,33 +1,27 @@
 import logging
-
+from aiogram import executor
+from aiohttp import web
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
-from aiogram.types import ChatType
-from aiogram.utils.executor import start_webhook
-from config import API_TOKEN, WEBHOOK_HOST, WEBHOOK_PATH, WEBAPP_PORT, CHAT_ID
+from config import API_TOKEN, WEBHOOK_HOST
 
 WEBHOOK_URL = f"{WEBHOOK_HOST}/{API_TOKEN}"
 WEBAPP_HOST = 'localhost'
 logging.basicConfig(level=logging.INFO)
+
 bot = Bot(token=API_TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot)
 
+app = web.Application()
 
-@dp.message_handler(chat_type=[ChatType.SUPERGROUP, ChatType.GROUP])
+
+@dp.message_handler()
 async def echo(message: types.Message):
-    print(message)
-    if message.chat.id == CHAT_ID:
-        return
-    try:
-        last_name = message.from_user.last_name
-    except AttributeError:
-        last_name = message.from_user.username
-
-    text = f'''<i>Из чата: </i> <b>"{message.chat.title}"</b>
-<i>От: </i> <b>"{message.from_user.first_name} {last_name}"</b>
-{message.text}'''
-
-    await bot.send_message(chat_id=CHAT_ID, text=text)
+    a = str(await bot.get_me())
+    print('hello_main')
+    text = message.text
+    await message.answer(a)
+    await message.answer(text)
 
 
 async def on_startup(dp):
@@ -39,14 +33,15 @@ async def on_shutdown(dp):
     await bot.delete_webhook()
     logging.warning('Bye!')
 
-
 if __name__ == '__main__':
-    start_webhook(
+    custom_executor = executor.set_webhook(
         dispatcher=dp,
         webhook_path='/'+API_TOKEN,
         on_startup=on_startup,
         on_shutdown=on_shutdown,
         skip_updates=True,
-        host=WEBAPP_HOST,
-        port=WEBAPP_PORT,
+        web_app=app
     )
+
+    custom_executor.run_app()
+
