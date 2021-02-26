@@ -49,9 +49,18 @@ async def echo(message: types.Message):
     await message.answer(text)
 
 
+@dp2.message_handler()
+async def echo(message: types.Message):
+    a = str(await bot.get_me())
+    print('hello_main')
+    text = message.text
+    await message.answer(a)
+    await message.answer(text)
+
+
+
 async def on_startup(dp):
     await bot.delete_webhook()
-    await bot2.delete_webhook()
     await bot.set_webhook(WEBHOOK_URL)
 
 
@@ -62,7 +71,8 @@ async def on_shutdown(dp):
 
 
 async def on_startup2(dp2):
-    await bot2.set_webhook(WEBHOOK_URL)
+    await bot2.delete_webhook()
+    await bot2.set_webhook(WEBHOOK_URL2)
 
 
 async def on_shutdown2(dp2):
