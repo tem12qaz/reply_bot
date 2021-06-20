@@ -61,12 +61,14 @@ async def parse_url(url: Url):
         logger.exception(ex)
 
     if len(data) == 2:
-        if url in available_products:
+        if url.url in available_products:
             available_products.remove(url.url)
             await send_info(data)
 
     elif len(data) == 3:
-        if url not in available_products:
+        print('x')
+        print(available_products)
+        if url.url not in available_products:
             available_products.append(url.url)
             data.append(url.url)
             await send_info(data)
@@ -81,8 +83,9 @@ async def parse_cycle():
         urls = await Url.all()
         for url in urls:
             loop = asyncio.get_running_loop()
-            loop.create_task(parse_url(url))
-            await asyncio.sleep(sleep_time)
+            loop.run_until_complete(parse_url(url))
+
+        await asyncio.sleep(sleep_time)
 
 
 @dp.message_handler(commands=['start'])
