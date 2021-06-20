@@ -51,35 +51,38 @@ async def send_info(data):
         await bot.send_message(admin, text)
 
 
+async def parse_url(url: Url):
+    print('start parse')
+    try:
+        data = await get_data(url)
+    except Exception as ex:
+        data = ()
+        print(ex)
+        logger.exception(ex)
+
+    if len(data) == 2:
+        if url in available_products:
+            available_products.remove(url.url)
+            await send_info(data)
+
+    elif len(data) == 3:
+        if url not in available_products:
+            available_products.append(url.url)
+            data.append(url.url)
+            await send_info(data)
+
+    print('stop parse')
+
+
 async def parse_cycle():
     i = 0
     while True:
         i += 1
         urls = await Url.all()
         for url in urls:
-            try:
-                data = await get_data(url)
-            except Exception as ex:
-                print(ex)
-                logger.exception(ex)
-                print('ex sleep')
-                await asyncio.sleep(20)
-                continue
-
-            if len(data) == 2:
-                if url in available_products:
-                    available_products.remove(url.url)
-
-            elif len(data) == 3:
-                if url not in available_products:
-                    available_products.append(url.url)
-                    data.append(url.url)
-            else:
-                continue
-
-            await send_info(data)
+            loop = asyncio.get_running_loop()
+            loop.create_task(parse_url(url))
             await asyncio.sleep(sleep_time)
-        print(i)
 
 
 @dp.message_handler(commands=['start'])
