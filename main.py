@@ -30,7 +30,7 @@ def del_actions(tg_id):
     if tg_id in waiting_del:
         waiting_del.remove(tg_id)
 
-    if tg_id in waiting_del:
+    if tg_id in waiting_add:
         waiting_add.remove(tg_id)
 
     if tg_id in waiting_time:
@@ -52,7 +52,9 @@ async def send_info(data):
 
 
 async def parse_cycle():
+    i = 0
     while True:
+        i += 1
         urls = await Url.all()
         for url in urls:
             try:
@@ -60,6 +62,8 @@ async def parse_cycle():
             except Exception as ex:
                 print(ex)
                 logger.exception(ex)
+                print('ex sleep')
+                await asyncio.sleep(20)
                 continue
 
             if len(data) == 2:
@@ -75,6 +79,7 @@ async def parse_cycle():
 
             await send_info(data)
             await asyncio.sleep(sleep_time)
+        print(i)
 
 
 @dp.message_handler(commands=['start'])
@@ -133,8 +138,13 @@ async def list_command(message: types.Message):
     text = ''
 
     for url in urls:
-        row = url.id + '. ' + url.url + '/n-------------------------/n'
+        row = str(url.id) + '. ' + url.url + '''
+-------------------------
+'''
         text += row
+
+    if text == '':
+        text = 'Нет ни одного url'
 
     await message.answer(text)
 
@@ -163,13 +173,15 @@ async def listen_url(message: types.Message):
         try:
             await Url.create(url=message.text)
         except Exception as e:
+            print(e)
             await message.answer(f'Такой url уже существует')
         else:
             await message.answer(f'Url добавлен')
 
     elif tg_id in waiting_del:
         try:
-            await Url.create(url=message.text)
+            url = await Url.get(url=message.text)
+            await url.delete()
         except Exception as e:
             await message.answer('Такого url не существует')
         else:
@@ -194,6 +206,8 @@ async def listen_url(message: types.Message):
 async def on_startup(dp):
     await db_init()
     await bot.set_webhook(WEBHOOK_URL)
+    await parse_cycle()
+    print('start')
 
 
 async def on_shutdown(dp):
@@ -214,4 +228,5 @@ if __name__ == '__main__':
             port=WEBAPP_PORT,
         )
     except Exception as e:
+        print(e)
         logger.exception('STOP_WEBHOOK')

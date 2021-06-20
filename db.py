@@ -22,4 +22,4 @@ async def db_init():
 
 class Url(Model):
     id = fields.IntField(pk=True)
-    url = fields.BigIntField(unique=True)
+    url = fields.CharField(500, unique=True)

@@ -20,7 +20,7 @@ async def get_data(url: Url):
 
     size_list = size_div.find_all('product-size-selector__size-list-item')
     out_of_stock_size_list = size_div.find_all('product-size-selector__size-list-item--out-of-stock')
-    size_list = size_list - out_of_stock_size_list
+    size_list = list(set(size_list) - set( out_of_stock_size_list))
 
     name = soup.find("h1", class_="product-detail-info__name").text
     num = soup.find("p", class_="product-detail-selected-color").text.split('|')[1].replace(' ', '')
@@ -35,7 +35,7 @@ async def get_data(url: Url):
         if size != size_list[-1]:
             size_text += ', '
 
-    data = (name, num, size_text)
+    data = [name, num, size_text]
 
     return data
 
