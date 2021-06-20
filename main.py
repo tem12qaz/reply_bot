@@ -82,7 +82,7 @@ async def parse_cycle():
         for url in urls:
             loop = asyncio.get_running_loop()
             loop.create_task(parse_url(url))
-            await asyncio.sleep(sleep_time)
+             await asyncio.sleep(sleep_time)
 
 
 @dp.message_handler(commands=['start'])
