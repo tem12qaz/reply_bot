@@ -29,13 +29,12 @@ async def get_data(url: Url):
         data = (name, num)
         return data
 
-    size_text = ''
+    size_list2 = []
     for size in size_list:
-        size_text += size.find("span", class_="product-size-info__main-label").text
-        if size != size_list[-1]:
-            size_text += ', '
+        size_list2.append(size.find("span", class_="product-size-info__main-label").text)
 
-    data = [name, num, size_text]
+
+    data = [name, num, size_list2]
 
     return data
 

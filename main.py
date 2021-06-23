@@ -22,7 +22,7 @@ waiting_add = []
 waiting_del = []
 waiting_time = []
 
-available_products = []
+available_products = {}
 sleep_time = 2
 
 
@@ -37,13 +37,39 @@ def del_actions(tg_id):
         waiting_time.remove(tg_id)
 
 
-async def send_info(data):
+async def send_info(data, del_size=None, new_size=None):
     if len(data) == 2:
         text = f'''Товар "{data[0]}"[{data[1]}] исчез из продажи'''
     elif len(data) == 4:
-        text = f'''Товар "{data[0]}"[{data[1]}] появился в наличии.
+        sizes = 'sizes'
+        text = f'''Товар "{data[0]}"[{data[1]}]
+Размеры: {data[2]}
+{sizes}
+{data[3]}
+'''
+        if not del_size and not new_size:
+            text = f'''Товар "{data[0]}"[{data[1]}] появился в наличии.
 Размеры: {data[2]}
 {data[3]}'''
+
+        else:
+            size_str = ''
+            if del_size:
+                size_str = 'Исчезли из продажи:'
+                for size in del_size:
+                    size_str += size + ' '
+
+                if new_size:
+                    size_str += '''
+'''
+
+            if new_size:
+                size_str += 'Появились в продаже:'
+                for size in new_size:
+                    size_str += size + ' '
+
+            text = text.format(sizes=size_str)
+
     else:
         return
 
@@ -61,12 +87,18 @@ async def parse_url(url: Url):
 
     if len(data) == 2:
         if url.url in available_products:
-            available_products.remove(url.url)
+            available_products.pop(url.url)
             await send_info(data)
 
     elif len(data) == 3:
-        if url.url not in available_products:
-            available_products.append(url.url)
+        old_size_list = available_products.get(url.url)
+        if old_size_list is not None:
+            deleted_size_list = set(old_size_list) - set(data[2])
+            new_size_list = set(data[2]) - set(old_size_list)
+            await send_info(data, deleted_size_list, new_size_list)
+
+        else:
+            available_products[url.url] = data[2]
             data.append(url.url)
             await send_info(data)
 
