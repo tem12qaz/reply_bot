@@ -52,7 +52,6 @@ async def send_info(data):
 
 
 async def parse_url(url: Url):
-    print('start parse')
     try:
         data = await get_data(url)
     except Exception as ex:
@@ -61,17 +60,15 @@ async def parse_url(url: Url):
         logger.exception(ex)
 
     if len(data) == 2:
-        if url in available_products:
+        if url.url in available_products:
             available_products.remove(url.url)
             await send_info(data)
 
     elif len(data) == 3:
-        if url not in available_products:
+        if url.url not in available_products:
             available_products.append(url.url)
             data.append(url.url)
             await send_info(data)
-
-    print('stop parse')
 
 
 async def parse_cycle():
@@ -82,7 +79,8 @@ async def parse_cycle():
         for url in urls:
             loop = asyncio.get_running_loop()
             loop.create_task(parse_url(url))
-             await asyncio.sleep(sleep_time)
+
+        await asyncio.sleep(sleep_time)
 
 
 @dp.message_handler(commands=['start'])
@@ -183,7 +181,12 @@ async def listen_url(message: types.Message):
 
     elif tg_id in waiting_del:
         try:
-            url = await Url.get(url=message.text)
+            try:
+                url_id = int(message.text)
+            except ValueError:
+                url = await Url.get(url=message.text)
+            else:
+                url = await Url.get(id=url_id)
             await url.delete()
         except Exception as e:
             await message.answer('Такого url не существует')
@@ -209,7 +212,8 @@ async def listen_url(message: types.Message):
 async def on_startup(dp):
     await db_init()
     await bot.set_webhook(WEBHOOK_URL)
-    await parse_cycle()
+    loop = asyncio.get_running_loop()
+    loop.create_task(parse_cycle())
     print('start')
 
 
