@@ -8,6 +8,7 @@ from config import API_TOKEN, WEBHOOK_HOST, WEBHOOK_PATH, WEBAPP_PORT, admins
 from db import db_init, Url
 from logger_config import logger_config
 from parse import get_data
+from tor_connection import new_connection
 
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 WEBAPP_HOST = 'localhost'
@@ -106,6 +107,8 @@ async def parse_url(url: Url):
 async def parse_cycle():
     i = 0
     while True:
+        if i % 10 == 0:
+            new_connection()
         i += 1
         urls = await Url.all()
         for url in urls:

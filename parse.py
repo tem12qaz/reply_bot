@@ -11,7 +11,8 @@ async def get_data(url: Url):
     async with aiohttp.ClientSession() as session:
         response = await session.get(
             url.url,
-            headers={'User-Agent': user_agent.random}
+            headers={'User-Agent': user_agent.random},
+            proxy='socks5://127.0.0.1:9050'
         )
         result = await response.text()
 
