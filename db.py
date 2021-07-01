@@ -20,6 +20,6 @@ async def db_init():
     await Tortoise.generate_schemas()
 
 
-class Chat(Model):
+class Url(Model):
     id = fields.IntField(pk=True)
-    telegram_id = fields.BigIntField(unique=True, index=True)
+    url = fields.CharField(500, unique=True)
