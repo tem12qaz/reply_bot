@@ -124,7 +124,8 @@ async def start_command(message: types.Message):
 /add - Добавить url
 /del - Удалить url
 /cancel - Отменить действие
-/list - Список url'''
+/list - Список url
+/time - Изменить задержку'''
 
     await message.answer(text)
 
